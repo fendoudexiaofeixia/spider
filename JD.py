@@ -5,37 +5,42 @@ import requests
 import re
 import json
 import time
+import urllib3
 from urllib.request import urlopen
 
 
 def get_page_html(i=1):
-    # url = 'https://search.jd.com/s_new.php?keyword=freebuds&wq=freebuds&page=2&s=27&scrolling=y&log_id=1596636759595.7784&tpl=3_M&isList=0&show_items='
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    url = 'https://search.jd.com/Search?keyword=freebuds3&suggest=1.def.0.V12--38s0&wq=freebuds3&page=%s&s=%s&click=0' % (
+        i, i + 60)
     kv = {'User-Agent': 'Mozilla/5.0',
           'Referer': 'https://search.jd.com/Search?keyword=freebuds&enc=utf-8&wq=freebuds&pvid=a16fe2a910b14e7695ce194f60c490e5'}
     # for i in range(1, 10, 2):
-    resp = requests.get(
-        url='https://search.jd.com/s_new.php?keyword=freebuds&wq=freebuds&page=%s&s=61&scrolling=y&log_id=1596636759595.7784&tpl=3_M&isList=0&show_items=' % i
-        , headers=kv, verify=False)
+    resp = requests.get(url, headers=kv, verify=False)
     if resp.status_code == 200:
         bs0bj = BeautifulSoup(resp.content, features='html.parser')
         # time.sleep(1)
+        # with open(r'C:\Users\lixiaodong\Desktop\aaa.txt', 'w', encoding='utf8') as wstream:
+        #     wstream.write(str(bs0bj))
         return bs0bj
         # prices_id = re.match(_.attrs['id'], '[0-9]*')
         # print(prices_id)
 
 
 def get_product_id(html):
-    product_id = html.findAll('div')
+    product_id = html.findAll('img', {'class': "err-product"})
     for _ in product_id:
-        if 'id' in _.attrs:
+        if 'data-sku' and 'class' in _.attrs:
             # print(re.findall(r'[0-9]*', _.attrs['id'])[6])
-            return re.findall(r'[0-9]*', _.attrs['id'])[6]
+            # return re.findall(r'[0-9]*', _.attrs['id'])[-2]
+            # return _.attrs['data-sku']
+            yield _.attrs['data-sku']
 
 
 def get_prices(product_id):
     js = requests.get('https://p.3.cn/prices/mgets?skuIds=J_' + product_id)
     resp = json.loads(js.content)
-    return resp[0]['m']
+    return resp[0]['p']
 
 
 def page_decode(page_bytes, charsets):
@@ -47,15 +52,25 @@ def page_decode(page_bytes, charsets):
 
 
 def main():
-    for i in range(1, 50, 2):
+    rep = []
+    for i in range(1, 10, 2):
         a = get_page_html(i)
-        b = get_product_id(a)
-        get_prices(b)
+        for n in get_product_id(a):
+            rep.append(n)
+            print(n)
+            # print(get_prices(n))
+    # # print(b)
 
-        # for a in get_product_id(i):
-    # get_product_id(obj)
-    #     print(get_prices(a))
-    # print(prices_id)
+    # print(a)
+    # print('********************************************************', i)
+    dic = {}.fromkeys(rep)
+    # # 这种方法建立字典，会把列表里的元素当做字典的键，由于字典的键不能重复，所以会自动去重
+    if len(dic) == len(rep):
+        print('列表里的元素互不重复！')
+    else:
+        print('列表里有重复的元素！')
+        print(len(dic), len(rep))
+
 
 
 if __name__ == '__main__':
