@@ -11,7 +11,7 @@ import lxml
 
 def get_page_front_html(i):
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    url = 'https://search.jd.com/s_new.php?keyword=freebuds3&suggest=1.his.0.0&wq=freebuds3&scrolling=y&log_id=1596809916583.3068&tpl=3_M&isList=0&show_items=&page=' + str(
+    url = 'https://search.jd.com/Search?keyword=freebuds3&suggest=1.his.0.0&wq=freebuds3&s=1&click=0&page=' + str(
         2 * i - 1)
     kv = {'User-Agent': 'Mozilla/5.0',
           'Referer': 'https://search.jd.com/Search?keyword=freebuds&enc=utf-8&wq=freebuds&pvid=a16fe2a910b14e7695ce194f60c490e5'}
@@ -25,7 +25,7 @@ def get_page_last_html(i):
     a = time.time()
     b = '%.5f' % a
     url = 'https://search.jd.com/s_new.php?keyword=freebuds3&suggest=1.his.0.0&wq=freebuds3&scrolling=y&tpl=3_M&isList=0&show_items=&page=' + str(
-        2 * i) + '&s=' + str(48 * i - 20) + '&log_id=' + str(b)
+        2 * i) + '&s=' + str(26 * i + 1) + '&log_id=' + str(b)
     kv = {'User-Agent': 'Mozilla/5.0',
           'Referer': 'https://search.jd.com/Search?keyword=freebuds&enc=utf-8&wq=freebuds&pvid=a16fe2a910b14e7695ce194f60c490e5'}
     resp = requests.get(url, headers=kv, verify=False)
@@ -38,6 +38,7 @@ def get_id(html):
     product = html.findAll('li', {'class': 'gl-item'})
     for data in product:
         try:
+            time.sleep(0.01)
             yield re.findall(r'[0-9]*\.00', str(data.findAll('div', {'class': 'p-price'})))[0]
         except:
             print('失败')
