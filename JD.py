@@ -6,30 +6,32 @@ import re
 import json
 import time
 import urllib3
-import lxml
+from selenium import webdriver
 
-PRODUCT_ID = re.compile(r'<strong class="[A-Z]\_[0-9]*" data-done="1">')
-PRICES = re.compile(r'<i>[0-9]*.00</i>')
+# PRODUCT_ID = re.findall(r'<strong class="[A-Z]\_[0-9]*" data-done="1">')
+# PRICES = re.findall(r'<i>[0-9]*.00</i>')
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-def get_page_front_html():
-    url = 'https://search.jd.com/Search?keyword=freebuds3&suggest=1.his.0.0&wq=freebuds3&page=1&s=53&click=0'
-    kv = {'User-Agent': 'Mozilla/5.0',
-          'Referer': 'https://www.jd.com/'}
-    resp = requests.get(url, headers=kv, verify=False)
-    if resp.status_code == 200:
-        bs0bj = BeautifulSoup(resp.content, features='lxml')
-        return bs0bj
+def get_url(n=1):
+    url = "https://search.jd.com/Search?keyword=freebuds3&suggest=1.his.0.0&wq=freebuds3&page=%s&s=53&click=0" % n
+
+    # js = "var q=document.getElementById('id').scrollTop=100000"
+    browser = webdriver.Chrome(executable_path="D:\chromedriver_win32\chromedriver.exe")
+    browser.get(url)
+    time.sleep(3)
+    browser.execute_script("window.scrollTo(0,document.body.scrollHeight)")
+    time.sleep(1)
+    html = browser.page_source
+    browser.close()
+    return html
 
 
-
-
-def get_id(content, pattern):
-    product = pattern.search(str(content))
+def get_id(content):
+    product = re.findall(r'<strong class="[A-Z]\_[0-9]*" data-done="1">', content)
     if product:
-        return re.findall(r'J_[0-9]*', product[0])[0]
-        # return product[0]
+        # return re.findall(r'J_[0-9]*', product[0])[0]
+        return product
 
 
 def get_prices(number):
@@ -40,9 +42,12 @@ def get_prices(number):
 
 
 if __name__ == '__main__':
-    a = get_page_front_html()
-    al = a.findAll('div', {'class': 'p-price'})
-    for i in al:
-        product_id = get_id(i, PRODUCT_ID)
-        prices = get_prices(product_id)
-        print('商品编号为：', product_id, '商品价格为：', prices)
+    for n in range(1, 117):
+        a = get_url(n)
+        # al = a.findAll('div', {'class': 'p-price'})
+        # print(a)
+        for i in get_id(a):
+            product_id = re.findall(r'J_[0-9]*', i)[0]
+            prices = get_prices(product_id)
+            print('商品编号为：', re.findall(r'J_[0-9]*', i)[0], '商品价格为：', prices)
+        print('------------------这是第%s页------------------' % n)
