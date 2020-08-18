@@ -40,13 +40,22 @@ def get_prices(number):
         return soup[0]['p']
 
 
-if __name__ == '__main__':
-    for n in range(1, 117):
+def return_id():
+    for n in range(1, 117, 2):
         a = get_url(n)
         # al = a.findAll('div', {'class': 'p-price'})
         # print(a)
         for i in get_id(a):
             product_id = re.findall(r'J_[0-9]*', i)[0]
-            prices = get_prices(product_id)
-            print('商品编号为：', re.findall(r'J_[0-9]*', i)[0], '商品价格为：', prices)
-        print('------------------这是第%s页------------------' % n)
+            yield product_id
+
+# if __name__ == '__main__':
+#     for n in range(1, 117):
+#         a = get_url(n)
+#         # al = a.findAll('div', {'class': 'p-price'})
+#         # print(a)
+#         for i in get_id(a):
+#             product_id = re.findall(r'J_[0-9]*', i)[0]
+#             prices = get_prices(product_id)
+#             print('商品编号为：', re.findall(r'J_[0-9]*', i)[0], '商品价格为：', prices)
+#         # print('------------------这是第%s页------------------' % n)
